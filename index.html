@@ -3,48 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quivo Chat - Koneksi Aman</title>
+    <title>Quivo Chat</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="welcome-screen" class="overlay">
         <div class="welcome-box">
             <div class="logo-quivo">Q</div>
-            <h2>Quivo Chat</h2>
+            <h1>Quivo Chat</h1>
+            
             <button id="btn-buat-id">Buat ID Mu</button>
             
-            <div id="id-display" class="hidden">
-                <p>ID Quivo Anda:</p>
-                <h3 id="generated-id">QVXXXXXXXX</h3>
+            <div id="id-display" style="display: none; margin-top: 20px;">
+                <p>ID Quivo Kamu:</p>
+                <h2 id="generated-id" style="color: #e94560;">QVXXXXXXXX</h2>
                 <button id="btn-masuk">Masuk ke Chat</button>
             </div>
         </div>
     </div>
 
-    <div class="app-container hidden" id="main-app">
-        <aside class="sidebar">
-            <div class="user-info">
-                <span id="my-id-label">Memuat ID...</span>
+    <div id="main-app" style="display: none; height: 100vh;">
+        <div class="sidebar">
+            <h3 id="my-id-label">ID: -</h3>
+            <hr>
+            <p>Kontak</p>
+            <div style="color: gray; font-size: 12px;">Belum ada kontak</div>
+        </div>
+        <div class="chat-area">
+            <div id="chat-box" style="flex: 1; padding: 20px; overflow-y: auto;">
+                <p style="color: gray;">Selamat datang di Quivo Chat!</p>
             </div>
-            <nav>
-                <button onclick="showMenu('profile')">Lihat ID Sendiri</button>
-                <button onclick="showMenu('add-contact')">Tambah ID Quivo</button>
-                <button onclick="showMenu('create-group')">Buat Group</button>
-            </nav>
-        </aside>
-
-        <main class="chat-area">
-            <header id="chat-header">Pilih Kontak atau Grup</header>
-            <div id="chat-box" class="chat-messages"></div>
-            <form id="chat-form">
-                <input type="text" id="msg" placeholder="Ketik pesan..." autocomplete="off">
-                <button type="submit">Kirim</button>
-            </form>
-        </main>
+            <div class="input-group">
+                <input type="text" id="msg-input" placeholder="Ketik pesan...">
+                <button id="btn-kirim">Kirim</button>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    
     <script src="script.js"></script>
 </body>
 </html>
