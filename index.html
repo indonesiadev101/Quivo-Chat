@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quivo Chat</title>
+    <title>Quivo Chat Final</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,33 +11,33 @@
         <div class="welcome-box">
             <div class="logo-quivo">Q</div>
             <h1>Quivo Chat</h1>
-            
             <button id="btn-buat-id">Buat ID Mu</button>
-            
             <div id="id-display" style="display: none; margin-top: 20px;">
-                <p>ID Quivo Kamu:</p>
+                <p>ID Kamu:</p>
                 <h2 id="generated-id" style="color: #e94560;">QVXXXXXXXX</h2>
                 <button id="btn-masuk">Masuk ke Chat</button>
             </div>
         </div>
     </div>
 
-    <div id="main-app" style="display: none; height: 100vh;">
-        <div class="sidebar">
-            <h3 id="my-id-label">ID: -</h3>
-            <hr>
-            <p>Kontak</p>
-            <div style="color: gray; font-size: 12px;">Belum ada kontak</div>
-        </div>
-        <div class="chat-area">
-            <div id="chat-box" style="flex: 1; padding: 20px; overflow-y: auto;">
-                <p style="color: gray;">Selamat datang di Quivo Chat!</p>
+    <div id="main-app" style="display: none; height: 100vh; flex-direction: row;">
+        <aside class="sidebar">
+            <h3 id="my-id-label" style="color: #e94560;">ID: -</h3>
+            <button class="btn-sidebar" id="btn-tambah-kontak">+ Tambah ID Quivo</button>
+            <div id="contacts-list" style="margin-top: 20px;">
+                <p style="font-size: 12px; color: gray;">DAFTAR KONTAK</p>
+                <div id="contacts-container"></div>
             </div>
-            <div class="input-group">
-                <input type="text" id="msg-input" placeholder="Ketik pesan...">
+        </aside>
+
+        <main class="chat-area">
+            <header class="chat-header">Ruang Obrolan Quivo</header>
+            <div id="chat-box"></div>
+            <div class="input-area">
+                <input type="text" id="msg-input" placeholder="Ketik pesan di sini...">
                 <button id="btn-kirim">Kirim</button>
             </div>
-        </div>
+        </main>
     </div>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
