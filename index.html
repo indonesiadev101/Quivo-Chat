@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quivo Chat Final</title>
+    <title>Quivo Chat - Realtime</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -25,22 +25,22 @@
             <h3 id="my-id-label" style="color: #e94560;">ID: -</h3>
             <button class="btn-sidebar" id="btn-tambah-kontak">+ Tambah ID Quivo</button>
             <div id="contacts-list" style="margin-top: 20px;">
-                <p style="font-size: 12px; color: gray;">DAFTAR KONTAK</p>
+                <p style="font-size: 11px; color: gray;">KLIK KONTAK UNTUK CHAT</p>
                 <div id="contacts-container"></div>
             </div>
         </aside>
 
         <main class="chat-area">
-            <header class="chat-header">Ruang Obrolan Quivo</header>
+            <header class="chat-header" id="current-chat-target">Pilih Kontak...</header>
             <div id="chat-box"></div>
             <div class="input-area">
-                <input type="text" id="msg-input" placeholder="Ketik pesan di sini...">
-                <button id="btn-kirim">Kirim</button>
+                <input type="text" id="msg-input" placeholder="Ketik pesan..." disabled>
+                <button id="btn-kirim" disabled>Kirim</button>
             </div>
         </main>
     </div>
 
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

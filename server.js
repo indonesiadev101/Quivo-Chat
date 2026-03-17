@@ -1,66 +1,46 @@
 const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+const path = require('path');
+
 const app = express();
-const http = require('http').createServer(app);
-const io = require('socket.io')(http);
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: { origin: "*" }
+});
 
-// Mengatur agar folder 'public' bisa diakses oleh browser (HTML, CSS, JS kita)
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Objek untuk menyimpan data user yang sedang online
-let onlineUsers = {}; 
+// Menyimpan daftar user yang online
+let users = {};
 
 io.on('connection', (socket) => {
-    console.log('Seseorang membuka Quivo...');
+    console.log('User terhubung:', socket.id);
 
-    // 1. Menangani Pendaftaran ID Quivo
-    socket.on('register-user', (quivoID) => {
-        socket.quivoID = quivoID; // Simpan ID di sesi socket
-        onlineUsers[quivoID] = socket.id; // Simpan mapping ID ke Socket ID
-        console.log(`User terdaftar dengan ID: ${quivoID}`);
-        
-        // Memberitahu semua orang bahwa ada user baru (opsional)
-        io.emit('receive-message', { 
-            sender: 'System', 
-            text: `${quivoID} bergabung ke Quivo!` 
-        });
+    // Saat user mendaftarkan ID-nya
+    socket.on('register-id', (myID) => {
+        users[myID] = socket.id;
+        console.log(`ID ${myID} terdaftar dengan socket ${socket.id}`);
     });
 
-    // 2. Menangani Pengiriman Pesan Real-time
-    socket.on('send-message', (data) => {
-        // data berisi: { sender: 'QV123...', text: 'Halo!' }
-        console.log(`Pesan dari ${data.sender}: ${data.text}`);
-        
-        // Kirimkan pesan ini ke SEMUA orang yang sedang buka aplikasi
-        io.emit('receive-message', data);
+    // Saat user mengirim pesan ke ID tertentu
+    socket.on('kirim-pesan', (data) => {
+        const targetSocketId = users[data.ke];
+        if (targetSocketId) {
+            io.to(targetSocketId).emit('pesan-baru', {
+                dari: data.dari,
+                isi: data.isi
+            });
+        }
     });
 
-    // 3. Menangani Pembuatan Group
-    socket.on('create-group', (groupData) => {
-        // groupData berisi: { name: 'Nama Group', admin: 'QV...' }
-        socket.join(groupData.name); // Masukkan pembuat group ke 'ruangan' khusus
-        console.log(`Group "${groupData.name}" dibuat oleh Admin: ${groupData.admin}`);
-        
-        // Kirim konfirmasi ke admin
-        socket.emit('receive-message', { 
-            sender: 'System', 
-            text: `Group ${groupData.name} berhasil dibuat. Anda adalah Admin.` 
-        });
-    });
-
-    // 4. Menangani User Terputus (Tutup browser)
     socket.on('disconnect', () => {
-        if (socket.quivoID) {
-            delete onlineUsers[socket.quivoID];
-            console.log(`${socket.quivoID} keluar dari Quivo.`);
+        // Hapus user dari daftar jika disconnect
+        for (let id in users) {
+            if (users[id] === socket.id) delete users[id];
         }
     });
 });
 
-// Menentukan Port (3000)
 const PORT = process.env.PORT || 3000;
-http.listen(PORT, () => {
-    console.log('-------------------------------------------');
-    console.log(`QUIVO CHAT SERVER JALAN!`);
-    console.log(`Klik di sini: http://localhost:${PORT}`);
-    console.log('-------------------------------------------');
-});
+server.listen(PORT, () => console.log(`Server jalan di port ${PORT}`));
