@@ -3,35 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quivo Chat - Realtime</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Quivo Chat Final - Fix Total</title>
+    <style>
+        body { margin: 0; background: #1a1a2e; color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        .overlay { position: fixed; inset: 0; background: #16213e; display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .welcome-box { background: #0f3460; padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .logo-quivo { font-size: 70px; font-weight: bold; color: #e94560; margin-bottom: 10px; }
+        
+        button { background: #e94560; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; margin: 5px; transition: 0.3s; }
+        button:hover { background: #ff4d6d; transform: scale(1.05); }
+        button:disabled { background: #555; cursor: not-allowed; }
+
+        .app-container { display: none; height: 100vh; flex-direction: row; }
+        .sidebar { width: 260px; background: #1a1a2e; border-right: 1px solid #0f3460; padding: 20px; }
+        .chat-area { flex: 1; display: flex; flex-direction: column; background: #16213e; }
+        
+        #chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .input-area { padding: 20px; background: #0f3460; display: flex; gap: 10px; }
+        input { flex: 1; padding: 12px; border-radius: 8px; border: none; outline: none; background: #1a1a2e; color: white; }
+
+        .msg-me { align-self: flex-end; background: #e94560; padding: 10px 15px; border-radius: 15px 15px 0 15px; }
+        .msg-them { align-self: flex-start; background: #0f3460; padding: 10px 15px; border-radius: 15px 15px 15px 0; border: 1px solid #e94560; }
+        
+        .contact-item { padding: 10px; background: #0f3460; margin-top: 5px; border-radius: 5px; cursor: pointer; border-left: 4px solid transparent; }
+        .contact-item:hover { border-left: 4px solid #e94560; }
+    </style>
 </head>
 <body>
+
     <div id="welcome-screen" class="overlay">
         <div class="welcome-box">
             <div class="logo-quivo">Q</div>
             <h1>Quivo Chat</h1>
             <button id="btn-buat-id">Buat ID Mu</button>
+            
             <div id="id-display" style="display: none; margin-top: 20px;">
                 <p>ID Kamu:</p>
-                <h2 id="generated-id" style="color: #e94560;">QVXXXXXXXX</h2>
+                <h2 id="generated-id" style="color: #e94560;">QVXXXXXX</h2>
                 <button id="btn-masuk">Masuk ke Chat</button>
             </div>
         </div>
     </div>
 
-    <div id="main-app" style="display: none; height: 100vh; flex-direction: row;">
+    <div id="main-app" class="app-container">
         <aside class="sidebar">
             <h3 id="my-id-label" style="color: #e94560;">ID: -</h3>
-            <button class="btn-sidebar" id="btn-tambah-kontak">+ Tambah ID Quivo</button>
-            <div id="contacts-list" style="margin-top: 20px;">
+            <button style="width: 100%;" onclick="tambahKontak()">+ Tambah ID Quivo</button>
+            <div id="contacts-container" style="margin-top: 20px;">
                 <p style="font-size: 11px; color: gray;">KLIK KONTAK UNTUK CHAT</p>
-                <div id="contacts-container"></div>
             </div>
         </aside>
 
         <main class="chat-area">
-            <header class="chat-header" id="current-chat-target">Pilih Kontak...</header>
+            <header id="chat-header" style="padding: 20px; background: #1a1a2e; border-bottom: 1px solid #0f3460; font-weight: bold;">Pilih Kontak...</header>
             <div id="chat-box"></div>
             <div class="input-area">
                 <input type="text" id="msg-input" placeholder="Ketik pesan..." disabled>
@@ -40,7 +64,88 @@
         </main>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="script.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        // Pakai CDN Socket.io agar jalan di GitHub & Render
+        const socket = io("https://quivo-chat.onrender.com", { autoConnect: false }); 
+        
+        let myID = "";
+        let targetID = "";
+
+        const btnBuat = document.getElementById('btn-buat-id');
+        const btnMasuk = document.getElementById('btn-masuk');
+        const btnKirim = document.getElementById('btn-kirim');
+        const inputMsg = document.getElementById('msg-input');
+        const chatBox = document.getElementById('chat-box');
+
+        // FUNGSI 1: BUAT ID (PASTI JALAN)
+        btnBuat.addEventListener('click', () => {
+            myID = "QV" + Math.floor(100000 + Math.random() * 900000);
+            document.getElementById('generated-id').innerText = myID;
+            btnBuat.style.display = 'none';
+            document.getElementById('id-display').style.display = 'block';
+        });
+
+        // FUNGSI 2: MASUK CHAT
+        btnMasuk.addEventListener('click', () => {
+            document.getElementById('my-id-label').innerText = "ID: " + myID;
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'flex';
+            
+            // Connect ke server saat masuk
+            socket.connect();
+            socket.emit('register-id', myID);
+        });
+
+        // FUNGSI 3: TAMBAH KONTAK
+        function tambahKontak() {
+            const idTeman = prompt("Masukkan ID Quivo Teman:");
+            if (idTeman) {
+                const div = document.createElement('div');
+                div.className = "contact-item";
+                div.innerText = "👤 " + idTeman;
+                div.onclick = () => {
+                    targetID = idTeman;
+                    document.getElementById('chat-header').innerText = "Chat: " + targetID;
+                    inputMsg.disabled = false;
+                    btnKirim.disabled = false;
+                    chatBox.innerHTML = ""; // Bersihkan chat lama
+                };
+                document.getElementById('contacts-container').appendChild(div);
+            }
+        }
+
+        // FUNGSI 4: KIRIM PESAN
+        btnKirim.onclick = () => {
+            const pesan = inputMsg.value;
+            if (pesan.trim() !== "" && targetID !== "") {
+                // Tampilkan di layar sendiri
+                tampilkanPesan(pesan, 'msg-me');
+                
+                // Kirim ke server
+                socket.emit('kirim-pesan', { dari: myID, ke: targetID, isi: pesan });
+                
+                inputMsg.value = "";
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        };
+
+        // FUNGSI 5: TERIMA PESAN
+        socket.on('pesan-baru', (data) => {
+            if (data.dari === targetID) {
+                tampilkanPesan(data.isi, 'msg-them');
+            } else {
+                alert("Pesan baru dari " + data.dari);
+            }
+        });
+
+        function tampilkanPesan(teks, tipe) {
+            const div = document.createElement('div');
+            div.className = tipe;
+            div.innerText = teks;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
 </body>
 </html>
