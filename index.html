@@ -66,8 +66,8 @@
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
-        // Pakai CDN Socket.io agar jalan di GitHub & Render
-        const socket = io("https://quivo-chat.onrender.com", { autoConnect: false }); 
+        /* BAGIAN YANG SAYA UBAH: Mengarah ke IP Laptop kamu */
+        const socket = io("http://192.168.1.20:3000", { autoConnect: false }); 
         
         let myID = "";
         let targetID = "";
@@ -78,7 +78,6 @@
         const inputMsg = document.getElementById('msg-input');
         const chatBox = document.getElementById('chat-box');
 
-        // FUNGSI 1: BUAT ID (PASTI JALAN)
         btnBuat.addEventListener('click', () => {
             myID = "QV" + Math.floor(100000 + Math.random() * 900000);
             document.getElementById('generated-id').innerText = myID;
@@ -86,18 +85,15 @@
             document.getElementById('id-display').style.display = 'block';
         });
 
-        // FUNGSI 2: MASUK CHAT
         btnMasuk.addEventListener('click', () => {
             document.getElementById('my-id-label').innerText = "ID: " + myID;
             document.getElementById('welcome-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'flex';
             
-            // Connect ke server saat masuk
             socket.connect();
             socket.emit('register-id', myID);
         });
 
-        // FUNGSI 3: TAMBAH KONTAK
         function tambahKontak() {
             const idTeman = prompt("Masukkan ID Quivo Teman:");
             if (idTeman) {
@@ -109,28 +105,22 @@
                     document.getElementById('chat-header').innerText = "Chat: " + targetID;
                     inputMsg.disabled = false;
                     btnKirim.disabled = false;
-                    chatBox.innerHTML = ""; // Bersihkan chat lama
+                    chatBox.innerHTML = ""; 
                 };
                 document.getElementById('contacts-container').appendChild(div);
             }
         }
 
-        // FUNGSI 4: KIRIM PESAN
         btnKirim.onclick = () => {
             const pesan = inputMsg.value;
             if (pesan.trim() !== "" && targetID !== "") {
-                // Tampilkan di layar sendiri
                 tampilkanPesan(pesan, 'msg-me');
-                
-                // Kirim ke server
                 socket.emit('kirim-pesan', { dari: myID, ke: targetID, isi: pesan });
-                
                 inputMsg.value = "";
                 chatBox.scrollTop = chatBox.scrollHeight;
             }
         };
 
-        // FUNGSI 5: TERIMA PESAN
         socket.on('pesan-baru', (data) => {
             if (data.dari === targetID) {
                 tampilkanPesan(data.isi, 'msg-them');
